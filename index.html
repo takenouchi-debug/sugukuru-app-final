@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>スグクル商談シート V3.2 FINAL</title>
+    <title>スグクル商談シート V3.3 FINAL</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script> 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -37,6 +37,12 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; }
 /* 便宜の供与用スタイル */
 .supply-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; }
 .supply-item { font-weight: 500; }
+
+/* 曜日選択用 */
+.day-select-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.btn-day { flex: 1; min-width: 40px; padding: 8px 5px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
+.btn-day.selected { background: #2563eb; color: white; border-color: #2563eb; }
+
 body, html {
     height: 100%;
 } 
@@ -44,42 +50,64 @@ body, html {
 </head>
 <body>
 <div class="slide active" id="slide-intro">
-    <div class="text-center p-6">
-        <div class="mb-6 text-6xl text-blue-600"><i class="fas fa-rocket"></i></div>
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-4">スグクル営業App v3.2</h1>
-        <p class="mb-10 text-xl text-gray-500">Googleシート連携・自動保存版</p>
-        <button onclick="nextSlide()" class="bg-blue-600 text-white px-10 py-4 rounded-full text-xl font-bold shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
-            スタート
-        </button>
-    </div>
+    <div class="text-center p-6">
+        <div class="mb-6 text-6xl text-blue-600"><i class="fas fa-rocket"></i></div>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-4">スグクル営業App v3.3</h1>
+        <p class="mb-10 text-xl text-gray-500">Googleシート連携・改良版</p>
+        <button onclick="nextSlide()" class="bg-blue-600 text-white px-10 py-4 rounded-full text-xl font-bold shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
+            スタート
+        </button>
+    </div>
 </div>
 
-<div class="slide"><div class="input-group"><div class="question-number">1/17 契約条件</div><div class="question-text">契約の種別を選択してください</div>
-    <button class="btn-choice" onclick="selectChoice('input-contract', '労働者派遣')">A. 労働者派遣</button>
-    <button class="btn-choice" onclick="selectChoice('input-contract', '業務委託（請負）')">B. 業務委託（請負）</button>
-    <button class="btn-choice" onclick="selectChoice('input-contract', '有料職業紹介')">C. 有料職業紹介</button>
-    <button class="btn-choice" onclick="selectChoice('input-contract', '紹介予定派遣')">D. 紹介予定派遣</button>
-    <input type="hidden" id="input-contract">
+<div class="slide"><div class="input-group"><div class="question-number">1/20 企業情報</div><div class="question-text">派遣先企業の情報を入力してください</div>
+    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">派遣先事業所名</label>
+    <input type="text" id="input-company-name" placeholder="例: 株式会社いぶすき農業" oninput="checkInput(this)">
+    
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">事業所名（カナ）</label>
+    <input type="text" id="input-company-kana" placeholder="例: カブシキガイシャイブスキノウギョウ" oninput="checkInput(this)">
+    
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">所在地</label>
+    <textarea id="input-address" rows="2" placeholder="例: 鹿児島県指宿市山川XXXX番地" oninput="checkInput(this)"></textarea>
+
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">電話番号</label>
+    <input type="tel" id="input-phone" placeholder="例: 0993-XXXX-XXXX" oninput="checkInput(this)">
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">2/17 業務内容</div><div class="question-text">具体的な業務内容を入力してください</div>
-    <textarea id="input-job-desc" rows="4" placeholder="例: 大根の収穫、洗浄、選別作業。リフト免許があれば尚可。" oninput="checkInput(this)"></textarea>
+
+<div class="slide"><div class="input-group"><div class="question-number">2/20 就業場所</div><div class="question-text">派遣就業場所を選択してください</div>
+    <button class="btn-choice" id="choice-location-same" onclick="toggleLocationNote('input-work-location', '所在地と同じ', false)">A. 所在地と同じ</button>
+    <button class="btn-choice" id="choice-location-other" onclick="toggleLocationNote('input-work-location', 'その他', true)">B. その他</button>
+    <input type="hidden" id="input-work-location">
+    
+    <div id="work-location-fields" class="extra-time-inputs">
+        <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">具体的な就業場所</label>
+        <textarea id="input-work-location-note" rows="2" placeholder="例: 山川事業所内の第二工場" oninput="checkInput(this)"></textarea>
+    </div>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">3/17 就業場所</div><div class="question-text">就業場所の名称を入力してください</div>
-    <textarea id="input-location" rows="3" placeholder="例: いぶすき農業協同組合 山川事業所" oninput="checkInput(this)"></textarea>
+<div class="slide"><div class="input-group"><div class="question-number">3/20 契約条件</div><div class="question-text">契約の種別を選択してください</div>
+    <button class="btn-choice" onclick="selectChoice('input-contract', '労働者派遣')">A. 労働者派遣</button>
+    <button class="btn-choice" onclick="selectChoice('input-contract', '業務委託（請負）')">B. 業務委託（請負）</button>
+    <button class="btn-choice" onclick="selectChoice('input-contract', '有料職業紹介')">C. 有料職業紹介</button>
+    <button class="btn-choice" onclick="selectChoice('input-contract', '紹介予定派遣')">D. 紹介予定派遣</button>
+    <input type="hidden" id="input-contract">
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">4/17 期間</div><div class="question-text">派遣契約の開始日と終了予定日を選択してください</div>
-    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">開始日</label>
-    <input type="date" id="input-start-date" onchange="checkInput(this)" style="font-family: sans-serif; font-size: 1.2rem;">
-    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">終了予定日</label>
-    <input type="date" id="input-end-date" onchange="checkInput(this)" style="font-family: sans-serif; font-size: 1.2rem;">
+<div class="slide"><div class="input-group"><div class="question-number">4/20 業務内容</div><div class="question-text">具体的な業務内容を入力してください</div>
+    <textarea id="input-job-desc" rows="4" placeholder="例: 大根の収穫、洗浄、選別作業。リフト免許があれば尚可。" oninput="checkInput(this)"></textarea>
+</div></div>
+
+<div class="slide"><div class="input-group"><div class="question-number">5/20 期間</div><div class="question-text">派遣契約の開始日と終了予定日を選択してください</div>
+    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">開始日</label>
+    <input type="date" id="input-start-date" onchange="checkInput(this)" style="font-family: sans-serif; font-size: 1.2rem;">
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">終了予定日</label>
+    <input type="date" id="input-end-date" onchange="checkInput(this)" style="font-family: sans-serif; font-size: 1.2rem;">
 </div></div>
 
 <div class="slide"><div class="input-group">
-    <div class="question-number">5/17 勤務時間と休日</div>
-    <div class="question-text">勤務時間、休日、および休憩を入力してください</div>
+    <div class="question-number">6/20 勤務時間と休日</div>
+    <div class="question-text">勤務時間、休憩、および休日を設定してください</div>
     
     <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">勤務時間帯</label>
     <div class="flex items-center justify-between gap-3 mb-4">
@@ -118,125 +146,182 @@ body, html {
         </select>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
-        <div class="flex items-center gap-2">
-            <label class="block text-gray-500 font-medium text-base w-1/3">休日</label>
-            <input type="number" id="input-holiday-days" placeholder="例: 2" oninput="checkInput(this)" class="w-1/4 text-center">
-            <span class="text-xl font-bold text-gray-500">日/週</span>
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">休憩時間（開始/終了）</label>
+    <div class="flex items-center justify-between gap-3 mb-4">
+        <select id="input-break-start" class="w-1/2 text-base" onchange="calculateBreakMinutes()">
+            <option value="">開始時刻</option>
+            <option value="11:00">11:00</option><option value="11:30">11:30</option>
+            <option value="12:00">12:00</option><option value="12:30">12:30</option>
+            <option value="13:00">13:00</option><option value="13:30">13:30</option>
+            <option value="14:00">14:00</option><option value="14:30">14:30</option>
+        </select>
+        <span class="text-xl font-bold text-gray-600">〜</span>
+        <select id="input-break-end" class="w-1/2 text-base" onchange="calculateBreakMinutes()">
+            <option value="">終了時刻</option>
+            <option value="12:00">12:00</option><option value="12:30">12:30</option>
+            <option value="13:00">13:00</option><option value="13:30">13:30</option>
+            <option value="14:00">14:00</option><option value="14:30">14:30</option>
+            <option value="15:00">15:00</option><option value="15:30">15:30</option>
+        </select>
+    </div>
+    <div class="text-right text-sm text-gray-500 mb-4">
+        合計休憩時間: <span id="display-break-minutes">0</span> 分
+    </div>
+    <input type="hidden" id="input-break-minutes"> <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">休日（複数選択可）</label>
+    <div id="holiday-day-selector" class="day-select-group">
+        <button class="btn-day" data-day="日">日</button>
+        <button class="btn-day" data-day="月">月</button>
+        <button class="btn-day" data-day="火">火</button>
+        <button class="btn-day" data-day="水">水</button>
+        <button class="btn-day" data-day="木">木</button>
+        <button class="btn-day" data-day="金">金</button>
+        <button class="btn-day" data-day="土">土</button>
+        <button class="btn-day" data-day="祝">祝</button>
+    </div>
+    <input type="hidden" id="input-holiday-days">
+
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">その他（休憩の取り方、変形労働など）</label>
+    <textarea id="input-time-notes" rows="2" placeholder="例: 変形労働制。休憩は15時にも15分あり。" oninput="checkInput(this)"></textarea>
+
+</div></div>
+
+<div class="slide"><div class="input-group"><div class="question-number">7/20 時間外労働</div><div class="question-text">時間外労働の有無と上限を入力してください</div>
+    <button class="btn-choice" id="choice-overtime-yes" onclick="toggleExtraTimeInputs('input-overtime', '有', true, 'extra-time-fields')">A. 有</button>
+    <button class="btn-choice" id="choice-overtime-no" onclick="toggleExtraTimeInputs('input-overtime', '無', false, 'extra-time-fields')">B. 無</button>
+    <input type="hidden" id="input-overtime">
+    
+    <div id="extra-time-fields" class="extra-time-inputs">
+        <p class="text-sm font-bold mb-3 text-blue-600">— 時間外労働の具体的な上限（すべて時間で入力） —</p>
+        <div class="flex items-center mb-3">
+            <input type="number" id="input-overtime-day" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
+            <span class="text-lg">時間/日</span>
         </div>
-        <div class="flex items-center gap-2">
-            <label class="block text-gray-500 font-medium text-base w-1/3">休憩時間</label>
-            <input type="number" id="input-break-minutes" placeholder="例: 60" oninput="checkInput(this)" class="w-1/4 text-center">
-            <span class="text-xl font-bold text-gray-500">分</span>
+        <div class="flex items-center mb-3">
+            <input type="number" id="input-overtime-week" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
+            <span class="text-lg">時間/週</span>
+        </div>
+        <div class="flex items-center">
+            <input type="number" id="input-overtime-month-hours" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
+            <span class="text-lg">時間/月</span>
         </div>
     </div>
+</div></div>
+
+<div class="slide"><div class="input-group"><div class="question-number">8/20 休日労働</div><div class="question-text">休日労働の有無を選択してください</div>
+    <button class="btn-choice" id="choice-holidaywork-yes" onclick="toggleExtraTimeInputs('input-holiday-work', '有', true, 'holiday-work-fields')">A. 有</button>
+    <button class="btn-choice" id="choice-holidaywork-no" onclick="toggleExtraTimeInputs('input-holiday-work', '無', false, 'holiday-work-fields')">B. 無</button>
+    <input type="hidden" id="input-holiday-work">
     
-    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">その他（休憩の取り方、変形労働など）</label>
-    <textarea id="input-time-notes" rows="2" placeholder="例: 12:00〜13:00に取得。変形労働制。" oninput="checkInput(this)"></textarea>
-
-</div></div>
-<div class="slide"><div class="input-group"><div class="question-number">6/17 時間外労働</div><div class="question-text">時間外労働の有無を選択し、上限を入力してください</div>
-    <button class="btn-choice" id="choice-overtime-yes" onclick="toggleExtraTimeInputs('input-overtime', '有', true)">A. 有</button>
-    <button class="btn-choice" id="choice-overtime-no" onclick="toggleExtraTimeInputs('input-overtime', '無', false)">B. 無</button>
-    <input type="hidden" id="input-overtime">
-    
-    <div id="extra-time-fields" class="extra-time-inputs">
-        <p class="text-sm font-bold mb-3 text-blue-600">— 時間外労働の具体的な上限（すべて時間で入力） —</p>
-        <div class="flex items-center mb-3">
-            <input type="number" id="input-overtime-day" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
-            <span class="text-lg">時間/日</span>
-        </div>
+    <div id="holiday-work-fields" class="extra-time-inputs">
+        <p class="text-sm font-bold mb-3 text-blue-600">— 休日労働の条件 —</p>
+        <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">想定頻度</label>
         <div class="flex items-center mb-3">
-            <input type="number" id="input-overtime-week" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
-            <span class="text-lg">時間/週</span>
-        </div>
-        <div class="flex items-center">
-            <input type="number" id="input-overtime-month-hours" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
-            <span class="text-lg">時間/月</span>
-        </div>
-    </div>
+            <input type="number" id="input-holiday-freq" placeholder="0" class="w-1/3 mr-2 text-center" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
+            <span class="text-lg">日/月</span>
+        </div>
+        <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">時間帯</label>
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <select id="input-holiday-start" class="w-1/2 text-base" onchange="checkInput(this)">
+                <option value="">開始時刻</option>
+                <option value="08:00">08:00</option><option value="09:00">09:00</option>
+                <option value="10:00">10:00</option><option value="11:00">11:00</option>
+                <option value="12:00">12:00</option>
+            </select>
+            <span class="text-xl font-bold text-gray-600">〜</span>
+            <select id="input-holiday-end" class="w-1/2 text-base" onchange="checkInput(this)">
+                <option value="">終了時刻</option>
+                <option value="17:00">17:00</option><option value="18:00">18:00</option>
+                <option value="19:00">19:00</option><option value="20:00">20:00</option>
+            </select>
+        </div>
+    </div>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">7/17 募集枠</div><div class="question-text">必要人数を入力してください</div>
-    <div class="flex items-center gap-4">
-        <input type="number" id="input-headcount" placeholder="3" oninput="checkInput(this)" class="text-center">
-        <span class="text-2xl font-bold text-gray-500">名</span>
-    </div>
+<div class="slide"><div class="input-group"><div class="question-number">9/20 募集枠</div><div class="question-text">必要人数を入力してください</div>
+    <div class="flex items-center gap-4">
+        <input type="number" id="input-headcount" placeholder="3" oninput="checkInput(this)" class="text-center">
+        <span class="text-2xl font-bold text-gray-500">名</span>
+    </div>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">8/17 契約単価（税別）</div><div class="question-text">時給単価を免許の有無で入力してください</div>
-    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">免許なし</label>
-    <div class="flex items-center gap-4">
-        <span class="text-2xl font-bold text-gray-500">¥</span>
-        <input type="number" id="input-price-nomental" placeholder="1300" oninput="checkInput(this)">
-    </div>
-    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">免許持ち（例: リフトなど）</label>
-    <div class="flex items-center gap-4">
-        <span class="text-2xl font-bold text-gray-500">¥</span>
-        <input type="number" id="input-price-mental" placeholder="1500 (該当なしなら空欄可)" oninput="checkInput(this)">
-    </div>
+<div class="slide"><div class="input-group"><div class="question-number">10/20 契約単価（税別）</div><div class="question-text">時給単価を免許の有無で入力してください</div>
+    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">免許なし</label>
+    <div class="flex items-center gap-4">
+        <span class="text-2xl font-bold text-gray-500">¥</span>
+        <input type="number" id="input-price-nomental" placeholder="1300" oninput="checkInput(this)">
+    </div>
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">免許持ち（例: リフトなど）</label>
+    <div class="flex items-center gap-4">
+        <span class="text-2xl font-bold text-gray-500">¥</span>
+        <input type="number" id="input-price-mental" placeholder="1500 (該当なしなら空欄可)" oninput="checkInput(this)">
+    </div>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">9/17 責任者</div><div class="question-text">指揮命令者（派遣先責任者）のお名前を入力してください</div>
-    <input type="text" id="input-leader-name" placeholder="例: 物袋 夏樹" oninput="checkInput(this)">
+<div class="slide"><div class="input-group"><div class="question-number">11/20 責任者</div><div class="question-text">指揮命令者（派遣先責任者）のお名前を入力してください</div>
+    <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">氏名</label>
+    <input type="text" id="input-leader-name" placeholder="例: 物袋 夏樹" oninput="checkInput(this)">
+    <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">フリガナ（カナ）</label>
+    <input type="text" id="input-leader-kana" placeholder="例: モノフクロ ナツキ" oninput="checkInput(this)">
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">10/17 苦情処理</div><div class="question-text">派遣先における苦情処理担当者を選択してください</div>
-    <button class="btn-choice" id="choice-complaint-same" onclick="toggleComplaintInputs('input-complaint-role', '指揮命令者と同じ', false)">A. 指揮命令者と同じ</button>
-    <button class="btn-choice" id="choice-complaint-other" onclick="toggleComplaintInputs('input-complaint-role', 'その他', true)">B. その他</button>
-    <input type="hidden" id="input-complaint-role">
-    
-    <div id="complaint-fields" class="extra-time-inputs">
-        <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">お名前</label>
-        <input type="text" id="input-complaint-name" placeholder="例: 営業部長 花子" oninput="checkInput(this)">
-        <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">連絡先</label>
-        <input type="text" id="input-complaint-contact" placeholder="例: 0993-XX-XXXX" oninput="checkInput(this)">
-    </div>
+<div class="slide"><div class="input-group"><div class="question-number">12/20 苦情処理</div><div class="question-text">派遣先における苦情処理担当者を選択してください</div>
+    <button class="btn-choice" id="choice-complaint-same" onclick="toggleComplaintInputs('input-complaint-role', '指揮命令者と同じ', false)">A. 指揮命令者と同じ</button>
+    <button class="btn-choice" id="choice-complaint-other" onclick="toggleComplaintInputs('input-complaint-role', 'その他', true)">B. その他</button>
+    <input type="hidden" id="input-complaint-role">
+    
+    <div id="complaint-fields" class="extra-time-inputs">
+        <label class="block text-gray-500 font-medium mb-1 mt-3 text-base">お名前</label>
+        <input type="text" id="input-complaint-name" placeholder="例: 営業部長 花子" oninput="checkInput(this)">
+        <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">フリガナ（カナ）</label>
+        <input type="text" id="input-complaint-kana" placeholder="例: エイギョウブチョウ ハナコ" oninput="checkInput(this)">
+        <label class="block text-gray-500 font-medium mb-1 mt-4 text-base">連絡先</label>
+        <input type="text" id="input-complaint-contact" placeholder="例: 0993-XX-XXXX" oninput="checkInput(this)">
+    </div>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">11/17 派遣元責任者</div><div class="question-text">派遣元責任者（スグクル）を選択してください</div>
-    <button class="btn-choice" onclick="selectChoice('input-our-pic', '壁 晃弘')">A. 壁 晃弘</button>
-    <button class="btn-choice" onclick="selectChoice('input-our-pic', 'クレモ')">B. クレモ</button>
-    <button class="btn-choice" onclick="selectChoice('input-our-pic', '吉原 伸')">C. 吉原 伸</button>
-    <input type="hidden" id="input-our-pic">
+<div class="slide"><div class="input-group"><div class="question-number">13/20 派遣元責任者</div><div class="question-text">派遣元責任者（スグクル）を選択してください</div>
+    <button class="btn-choice" onclick="selectChoice('input-our-pic', '壁 晃弘')">A. 壁 晃弘</button>
+    <button class="btn-choice" onclick="selectChoice('input-our-pic', 'クレモ')">B. クレモ</button>
+    <button class="btn-choice" onclick="selectChoice('input-our-pic', '吉原 伸')">C. 吉原 伸</button>
+    <input type="hidden" id="input-our-pic">
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">12/17 寮</div><div class="question-text">寮の準備の要否を選択してください</div>
-    <button class="btn-choice" onclick="selectChoice('input-dorm', '貴社で用意')">A. 貴社で用意</button>
-    <button class="btn-choice" onclick="selectChoice('input-dorm', 'スグクルで用意')">B. スグクルで用意</button>
-    <button class="btn-choice" onclick="selectChoice('input-dorm', '不要（自宅通勤）')">C. 不要（自宅通勤）</button>
-    <input type="hidden" id="input-dorm">
+<div class="slide"><div class="input-group"><div class="question-number">14/20 寮</div><div class="question-text">寮の準備の要否を選択してください</div>
+    <button class="btn-choice" onclick="selectChoice('input-dorm', '貴社で用意')">A. 貴社で用意</button>
+    <button class="btn-choice" onclick="selectChoice('input-dorm', 'スグクルで用意')">B. スグクルで用意</button>
+    <button class="btn-choice" onclick="selectChoice('input-dorm', '不要（自宅通勤）')">C. 不要（自宅通勤）</button>
+    <input type="hidden" id="input-dorm">
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">13/17 送迎・通勤</div><div class="question-text">現場までの送迎・通勤方法を選択してください</div>
-    <button class="btn-choice" id="choice-transport-company" onclick="selectChoiceAndShowNote('input-transport', '貴社送迎あり')">A. 貴社送迎あり</button>
-    <button class="btn-choice" id="choice-transport-sugukuru" onclick="selectChoiceAndShowNote('input-transport', 'スグクル送迎')">B. スグクル送迎</button>
-    <button class="btn-choice" id="choice-transport-self" onclick="selectChoiceAndShowNote('input-transport', '自力通勤')">C. 自力（免許・手段の確認）</button>
-    <input type="hidden" id="input-transport">
+<div class="slide"><div class="input-group"><div class="question-number">15/20 送迎・通勤</div><div class="question-text">現場までの送迎・通勤方法を選択してください</div>
+    <button class="btn-choice" id="choice-transport-company" onclick="selectChoiceAndShowNote('input-transport', '貴社送迎あり')">A. 貴社送迎あり</button>
+    <button class="btn-choice" id="choice-transport-sugukuru" onclick="selectChoiceAndShowNote('input-transport', 'スグクル送迎')">B. スグクル送迎</button>
+    <button class="btn-choice" id="choice-transport-self" onclick="selectChoiceAndShowNote('input-transport', '自力通勤')">C. 自力（免許・手段の確認）</button>
+    <input type="hidden" id="input-transport">
 
-        <div id="transport-self-fields" class="extra-time-inputs">
-        <p class="text-sm font-bold mb-3 text-blue-600">— 自力通勤の手段と備考 —</p>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-1">
-                <label class="block text-gray-500 font-medium mb-1 text-base">手段</label>
-                <select id="input-transport-means" class="text-base" style="font-size:1.1rem; padding:10px;" onchange="checkInput(this)">
-                    <option value="">選択</option>
-                    <option value="歩き">歩き</option>
-                    <option value="自転車">自転車</option>
-                    <option value="車">車</option>
-                    <option value="公共交通機関">公共交通機関</option>
-                </select>
-            </div>
-            <div class="col-span-1">
-                <label class="block text-gray-500 font-medium mb-1 text-base">備考</label>
-                <input type="text" id="input-transport-note" placeholder="例: 免許証の要否など" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
-            </div>
-        </div>
-    </div>
+    <div id="transport-self-fields" class="extra-time-inputs">
+        <p class="text-sm font-bold mb-3 text-blue-600">— 自力通勤の手段と備考 —</p>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1">
+                <label class="block text-gray-500 font-medium mb-1 text-base">手段</label>
+                <select id="input-transport-means" class="text-base" style="font-size:1.1rem; padding:10px;" onchange="checkInput(this)">
+                    <option value="">選択</option>
+                    <option value="歩き">歩き</option>
+                    <option value="自転車">自転車</option>
+                    <option value="車">車</option>
+                    <option value="公共交通機関">公共交通機関</option>
+                </select>
+            </div>
+            <div class="col-span-1">
+                <label class="block text-gray-500 font-medium mb-1 text-base">備考</label>
+                <input type="text" id="input-transport-note" placeholder="例: 免許証の要否など" oninput="checkInput(this)" style="font-size:1.1rem; padding:10px;">
+            </div>
+        </div>
+    </div>
 </div></div>
 
 <div class="slide"><div class="input-group">
-    <div class="question-number">14/17 便宜供与</div>
+    <div class="question-number">16/20 便宜供与</div>
     <div class="question-text">以下の項目について、供与元を選択してください</div>
 
     <div class="space-y-3">
@@ -275,44 +360,45 @@ body, html {
     <textarea id="input-supply-notes" rows="2" placeholder="例: ヘルメット、安全靴、水筒など" oninput="checkInput(this)"></textarea>
 
 </div></div>
-<div class="slide"><div class="input-group"><div class="question-number">15/17 福利厚生</div><div class="question-text">福利厚生施設の利用等について記述してください</div>
-    <textarea id="input-welfare" rows="3" placeholder="例: 食堂利用可（有料）、更衣室利用可" oninput="checkInput(this)"></textarea>
+
+<div class="slide"><div class="input-group"><div class="question-number">17/20 福利厚生</div><div class="question-text">福利厚生施設の利用等について記述してください</div>
+    <textarea id="input-welfare" rows="3" placeholder="例: 食堂利用可（有料）、更衣室利用可" oninput="checkInput(this)"></textarea>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">16/17 担当者</div><div class="question-text">営業担当者（あなた）を選択してください</div>
-    <select id="input-pic" onchange="checkInput(this)">
-        <option value="">選択してください</option>
-        <option value="壁 晃弘">A. 壁 晃弘</option>
-        <option value="クレモ">B. クレモ</option>
-        <option value="吉原 伸">C. 吉原 伸</option>
-        <option value="その他">D. その他</option>
-    </select>
+<div class="slide"><div class="input-group"><div class="question-number">18/20 担当者</div><div class="question-text">営業担当者（あなた）を選択してください</div>
+    <select id="input-pic" onchange="checkInput(this)">
+        <option value="">選択してください</option>
+        <option value="壁 晃弘">A. 壁 晃弘</option>
+        <option value="クレモ">B. クレモ</option>
+        <option value="吉原 伸">C. 吉原 伸</option>
+        <option value="その他">D. その他</option>
+    </select>
 </div></div>
 
-<div class="slide"><div class="input-group"><div class="question-number">17/17 備考</div><div class="question-text">その他、特記事項や備考を入力してください</div>
-    <textarea id="input-notes" rows="4" placeholder="特になければ空欄でOK" oninput="checkInput(this)"></textarea>
+<div class="slide"><div class="input-group"><div class="question-number">19/20 備考</div><div class="question-text">その他、特記事項や備考を入力してください</div>
+    <textarea id="input-notes" rows="4" placeholder="特になければ空欄でOK" oninput="checkInput(this)"></textarea>
 </div></div>
 
 
 <div class="slide" id="slide-result">
-    <div class="input-group text-center">
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">入力完了</h2>
-        <div class="result-box" id="result-output"></div>
+    <div class="input-group text-center">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">入力完了</h2>
+        <div class="result-box" id="result-output"></div>
 
-        <div class="grid gap-3">
-                        <button onclick="copyText()" class="w-full bg-gray-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-gray-700 transition">
-                <i class="fas fa-copy mr-2"></i> Slack用にコピー
-            </button>
+        <div class="grid gap-3">
+            <button onclick="copyText()" class="w-full bg-gray-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-gray-700 transition">
+                <i class="fas fa-copy mr-2"></i> Slack用にコピー
+            </button>
 
-                        <button id="btn-send-sheet" onclick="sendToSheet()" class="w-full bg-green-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-green-700 transition flex justify-center items-center">
-                <span><i class="fas fa-file-excel mr-2"></i> スプレッドシートに保存</span>
-                <div class="spinner" id="loading-spinner"></div>
-            </button>
-        </div>
-        
-        <button onclick="location.reload()" class="text-gray-400 underline text-sm mt-6 hover:text-gray-600">新しい案件を入力する</button>
-        
-    </div>
+            <button id="btn-send-sheet" onclick="sendToSheet()" class="w-full bg-green-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-green-700 transition flex justify-center items-center">
+                <span><i class="fas fa-file-excel mr-2"></i> スプレッドシートに保存</span>
+                <div class="spinner" id="loading-spinner"></div>
+            </button>
+        </div>
+        
+        <button onclick="location.reload()" class="text-gray-400 underline text-sm mt-6 hover:text-gray-600">新しい案件を入力する</button>
+        
+    </div>
 </div>
 
 <div class="nav-buttons">
@@ -327,12 +413,11 @@ body, html {
     <script>
         /* JSパネルの内容をすべて貼り付け */
 // ★★★★★ 重要：ここにコピーしたGASウェブアプリのURLを貼り付けてください ★★★★★
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkrHLrLPO1kQ5iQzCxvMwEp6fvjKPPvRXnNWYSEO6gFOm0_bRy5grtIghwR9xqoyxj/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkrHLrLPO1kQ5iQzCxvMwEp6fvjKPPvRXnNWYSEO6gFOm0_bRy5grtIghwR9xqoyxj/exec";
 // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
 let currentSlideIndex = 0;
 let slides; 
-const progressBar = document.getElementById('progressBar');
 const btnNext = document.getElementById('btn-next');
 const btnPrev = document.getElementById('btn-prev');
 let formData = {};
@@ -346,6 +431,14 @@ function init() {
     }
     // イントロ(0)と結果画面(slides.length - 1)を除いた質問の総数
     totalSlides = slides.length - 2; 
+
+    // 休日ボタンにイベントリスナーを追加
+    document.querySelectorAll('.btn-day').forEach(button => {
+        button.addEventListener('click', function() {
+            this.classList.toggle('selected');
+            updateHolidayDays();
+        });
+    });
 
     updateUI();
     document.addEventListener('keydown', function(e) {
@@ -365,18 +458,11 @@ function updateUI() {
         }
     });
 
-    const questionIndex = currentSlideIndex - 1;
-    const progress = questionIndex >= 0 && questionIndex <= totalSlides ? (questionIndex / totalSlides) * 100 : 0;
-    
-    // プログレスバーの要素が存在しないため、ここでは無視します（デザインが適用されれば解決）
-
     if (currentSlideIndex > 0 && currentSlideIndex < slides.length - 1) {
         // 質問スライド
         const inputElement = slides[currentSlideIndex].querySelector('input[type="text"], input[type="number"], input[type="date"], textarea, select, input[type="hidden"]');
         checkInput(inputElement); 
         btnNext.style.display = 'flex';
-        
-        // 戻るボタン表示 (Q1以降)
         btnPrev.style.display = 'block';
     } else if (currentSlideIndex === slides.length - 1) {
         // 結果スライド
@@ -392,7 +478,7 @@ function updateUI() {
 }
 
 function nextSlide() {
-    if (currentSlideIndex < slides.length - 1) {
+    if (currentSlideIndex < slides.length - 1 && btnNext.classList.contains('active')) {
         saveCurrentFormData();
         currentSlideIndex++;
         updateUI();
@@ -406,29 +492,89 @@ function prevSlide() {
     }
 }
 
+// Q6 休憩時間の自動計算
+function calculateBreakMinutes() {
+    const start = document.getElementById('input-break-start').value;
+    const end = document.getElementById('input-break-end').value;
+    const displayElement = document.getElementById('display-break-minutes');
+    const inputElement = document.getElementById('input-break-minutes');
+
+    if (start && end) {
+        // 時刻文字列を分単位に変換
+        const startTime = timeToMinutes(start);
+        const endTime = timeToMinutes(end);
+        let duration = endTime - startTime;
+
+        if (duration < 0) duration += 24 * 60; // 日付をまたぐ場合の対応（必須ではないが一応）
+        
+        displayElement.textContent = duration;
+        inputElement.value = duration; // hiddenフィールドに保存
+    } else {
+        displayElement.textContent = '0';
+        inputElement.value = '';
+    }
+    // 休憩時間入力後、Q6の必須チェックを実行
+    checkInput(document.getElementById('input-start-time'));
+}
+
+// 時刻文字列 "HH:MM" を分に変換
+function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+// Q6 休日（曜日）の更新
+function updateHolidayDays() {
+    const selectedDays = [];
+    document.querySelectorAll('.btn-day.selected').forEach(button => {
+        selectedDays.push(button.getAttribute('data-day'));
+    });
+    document.getElementById('input-holiday-days').value = selectedDays.join(', ');
+
+    // 休日入力後、Q6の必須チェックを実行
+    checkInput(document.getElementById('input-start-time'));
+}
+
 
 // --- フォームデータの保存 ---
 function saveCurrentFormData() {
-    // Q1. 契約の種別
+    // Q1. 企業情報 (新規追加)
+    formData['派遣先事業所名'] = document.getElementById('input-company-name')?.value || '';
+    formData['事業所名_カナ'] = document.getElementById('input-company-kana')?.value || '';
+    formData['所在地'] = document.getElementById('input-address')?.value || '';
+    formData['電話番号'] = document.getElementById('input-phone')?.value || '';
+    
+    // Q2. 就業場所 (新規追加)
+    formData['派遣就業場所'] = document.getElementById('input-work-location')?.value || '';
+    if (formData['派遣就業場所'] === 'その他') {
+        formData['派遣就業場所_備考'] = document.getElementById('input-work-location-note')?.value || '';
+    } else {
+        formData['派遣就業場所_備考'] = '所在地と同じ';
+    }
+
+    // Q3. 契約の種別
     formData['契約の種別'] = document.getElementById('input-contract')?.value || '';
-    // Q2. 業務内容
+    // Q4. 業務内容
     formData['業務内容'] = document.getElementById('input-job-desc')?.value || '';
-    // Q3. 就業場所
-    formData['就業場所'] = document.getElementById('input-location')?.value || '';
-    // Q4. 期間
+    // Q5. 期間
     formData['開始日'] = document.getElementById('input-start-date')?.value || '';
     formData['終了予定日'] = document.getElementById('input-end-date')?.value || '';
     
-    // Q5. 勤務時間と休日
+    // Q6. 勤務時間と休日 (修正)
     const startTime = document.getElementById('input-start-time')?.value || '';
     const endTime = document.getElementById('input-end-time')?.value || '';
-    const breakTime = document.getElementById('input-break-minutes')?.value || '';
+    const breakStart = document.getElementById('input-break-start')?.value || '';
+    const breakEnd = document.getElementById('input-break-end')?.value || '';
+    const breakMinutes = document.getElementById('input-break-minutes')?.value || '';
     const holidayDays = document.getElementById('input-holiday-days')?.value || '';
     const timeNotes = document.getElementById('input-time-notes')?.value || '';
 
-    formData['勤務時間・休日'] = `${startTime}〜${endTime} (休憩${breakTime}分). 休日: 週${holidayDays}日. 備考: ${timeNotes}`;
+    formData['勤務時間'] = `${startTime}〜${endTime}`;
+    formData['休憩時間'] = `${breakStart}〜${breakEnd} (合計${breakMinutes}分)`;
+    formData['休日_曜日'] = holidayDays; 
+    formData['勤務時間_備考'] = timeNotes;
     
-    // Q6. 時間外労働 
+    // Q7. 時間外労働 
     formData['時間外労働の有無'] = document.getElementById('input-overtime')?.value || '無';
     if (formData['時間外労働の有無'] === '有') {
         formData['残業上限_日'] = document.getElementById('input-overtime-day')?.value || '0';
@@ -439,27 +585,46 @@ function saveCurrentFormData() {
         formData['残業上限_週'] = '無';
         formData['残業上限_月_時間'] = '無';
     }
-    // Q7. 人数
+
+    // Q8. 休日労働 (新規追加)
+    formData['休日労働の有無'] = document.getElementById('input-holiday-work')?.value || '無';
+    if (formData['休日労働の有無'] === '有') {
+        formData['休日労働_頻度_月'] = document.getElementById('input-holiday-freq')?.value || '0';
+        formData['休日労働_開始時刻'] = document.getElementById('input-holiday-start')?.value || '';
+        formData['休日労働_終了時刻'] = document.getElementById('input-holiday-end')?.value || '';
+    } else {
+        formData['休日労働_頻度_月'] = '無';
+        formData['休日労働_開始時刻'] = '無';
+        formData['休日労働_終了時刻'] = '無';
+    }
+
+    // Q9. 人数
     formData['必要人数'] = document.getElementById('input-headcount')?.value || '';
-    // Q8. 単価
+    // Q10. 単価
     formData['単価_免許なし'] = document.getElementById('input-price-nomental')?.value || '';
     formData['単価_免許あり'] = document.getElementById('input-price-mental')?.value || '';
-    // Q9. 指揮命令者
-    formData['指揮命令者'] = document.getElementById('input-leader-name')?.value || '';
-    // Q10. 苦情処理者
+    
+    // Q11. 指揮命令者 (修正: フリガナ追加)
+    formData['指揮命令者_氏名'] = document.getElementById('input-leader-name')?.value || '';
+    formData['指揮命令者_カナ'] = document.getElementById('input-leader-kana')?.value || '';
+
+    // Q12. 苦情処理者 (修正: フリガナ追加)
     formData['苦情処理_役割'] = document.getElementById('input-complaint-role')?.value || '';
     if (formData['苦情処理_役割'] === 'その他') {
         formData['苦情処理_氏名'] = document.getElementById('input-complaint-name')?.value || '';
+        formData['苦情処理_カナ'] = document.getElementById('input-complaint-kana')?.value || '';
         formData['苦情処理_連絡先'] = document.getElementById('input-complaint-contact')?.value || '';
     } else {
         formData['苦情処理_氏名'] = '指揮命令者と同じ';
+        formData['苦情処理_カナ'] = '指揮命令者と同じ';
         formData['苦情処理_連絡先'] = '指揮命令者と同じ';
     }
-    // Q11. 派遣元責任者
+    
+    // Q13. 派遣元責任者
     formData['派遣元責任者'] = document.getElementById('input-our-pic')?.value || '';
-    // Q12. 寮
+    // Q14. 寮
     formData['寮の準備'] = document.getElementById('input-dorm')?.value || '';
-    // Q13. 送迎
+    // Q15. 送迎
     formData['送迎_方法'] = document.getElementById('input-transport')?.value || '';
     if (formData['送迎_方法'] === '自力通勤') {
         formData['自力通勤_手段'] = document.getElementById('input-transport-means')?.value || '';
@@ -469,22 +634,22 @@ function saveCurrentFormData() {
         formData['自力通勤_備考'] = '該当なし';
     }
     
-    // Q14. 便宜の供与 (最終修正版)
+    // Q16. 便宜の供与 
     formData['供与_Wi-Fi'] = document.getElementById('input-supply-wifi')?.value || '未選択';
     formData['供与_自転車'] = document.getElementById('input-supply-bike')?.value || '未選択';
     formData['供与_道具'] = document.getElementById('input-supply-tools')?.value || '未選択';
     formData['供与_その他'] = document.getElementById('input-supply-notes')?.value || '特になし';
 
-    // Q15. 福利厚生
+    // Q17. 福利厚生
     formData['福利厚生施設の利用等'] = document.getElementById('input-welfare')?.value || '';
-    // Q16. 営業担当者
+    // Q18. 営業担当者
     formData['営業担当者'] = document.getElementById('input-pic')?.value || '';
-    // Q17. 備考
+    // Q19. 備考
     formData['備考'] = document.getElementById('input-notes')?.value || '';
     
     // Slack題名用のキー
-    formData['企業名'] = '【要入力】'; 
-    formData['企業住所'] = '【要入力】';
+    formData['企業名'] = formData['派遣先事業所名']; 
+    formData['企業住所'] = formData['所在地'];
 }
 
 
@@ -494,17 +659,41 @@ function checkInput(element) {
     let isComplete = true;
 
     if (currentSlideIndex === 1) { 
+        // Q1. 企業情報 (全必須)
+        isComplete = document.getElementById('input-company-name').value.trim() !== '' &&
+                     document.getElementById('input-company-kana').value.trim() !== '' &&
+                     document.getElementById('input-address').value.trim() !== '' &&
+                     document.getElementById('input-phone').value.trim() !== '';
+
+    } else if (currentSlideIndex === 2) { 
+        // Q2. 就業場所
+        const workLocation = document.getElementById('input-work-location').value;
+        isComplete = workLocation !== '';
+        if (workLocation === 'その他') {
+             isComplete = document.getElementById('input-work-location-note').value.trim() !== '';
+        }
+    } else if (currentSlideIndex === 3) { 
+        // Q3. 契約種別
         isComplete = document.getElementById('input-contract').value !== '';
-    } else if (currentSlideIndex === 4) { 
-        isComplete = document.getElementById('input-start-date').value !== '' && document.getElementById('input-end-date').value !== '';
+
     } else if (currentSlideIndex === 5) { 
-        // Q5. 勤務時間と休日のチェック
+        // Q5. 期間
+        isComplete = document.getElementById('input-start-date').value !== '' && document.getElementById('input-end-date').value !== '';
+
+    } else if (currentSlideIndex === 6) { 
+        // Q6. 勤務時間と休日 (全必須)
+        const breakMinutes = document.getElementById('input-break-minutes').value;
+        const holidayDays = document.getElementById('input-holiday-days').value;
+
         isComplete = document.getElementById('input-start-time').value !== '' && 
                      document.getElementById('input-end-time').value !== '' &&
-                     document.getElementById('input-holiday-days').value !== '' &&
-                     document.getElementById('input-break-minutes').value !== '';
-    } else if (currentSlideIndex === 6) { 
-        // Q6. 時間外労働のチェック 
+                     document.getElementById('input-break-start').value !== '' &&
+                     document.getElementById('input-break-end').value !== '' &&
+                     breakMinutes !== '' &&
+                     holidayDays !== '';
+
+    } else if (currentSlideIndex === 7) { 
+        // Q7. 時間外労働のチェック 
         const overtime = document.getElementById('input-overtime').value;
         isComplete = overtime !== '';
         if (overtime === '有') {
@@ -513,34 +702,58 @@ function checkInput(element) {
             const monthInput = document.getElementById('input-overtime-month-hours').value.trim();
             isComplete = (dayInput !== '' || weekInput !== '' || monthInput !== ''); 
         }
+
     } else if (currentSlideIndex === 8) { 
-        // Q8. 契約単価のチェック (修正: どちらか一方でも入力されていればOK)
+        // Q8. 休日労働のチェック (新規追加)
+        const holidayWork = document.getElementById('input-holiday-work').value;
+        isComplete = holidayWork !== '';
+        if (holidayWork === '有') {
+            isComplete = document.getElementById('input-holiday-freq').value.trim() !== '' &&
+                         document.getElementById('input-holiday-start').value !== '' &&
+                         document.getElementById('input-holiday-end').value !== '';
+        }
+
+    } else if (currentSlideIndex === 10) { 
+        // Q10. 契約単価のチェック
         const priceNomental = document.getElementById('input-price-nomental').value.trim();
         const priceMental = document.getElementById('input-price-mental').value.trim();
         isComplete = (priceNomental !== '' || priceMental !== '');
-    } else if (currentSlideIndex === 10) { 
-        // Q10. 苦情処理のチェック 
+
+    } else if (currentSlideIndex === 11) { 
+        // Q11. 指揮命令者 (フリガナ含め必須)
+        isComplete = document.getElementById('input-leader-name').value.trim() !== '' &&
+                     document.getElementById('input-leader-kana').value.trim() !== '';
+
+    } else if (currentSlideIndex === 12) { 
+        // Q12. 苦情処理のチェック 
         const complaintRole = document.getElementById('input-complaint-role').value;
         isComplete = complaintRole !== '';
         if (complaintRole === 'その他') {
+            // その他を選んだ場合、氏名/フリガナ/連絡先のいずれか一つでも入力されていればOK
             const nameInput = document.getElementById('input-complaint-name').value.trim();
+            const kanaInput = document.getElementById('input-complaint-kana').value.trim();
             const contactInput = document.getElementById('input-complaint-contact').value.trim();
-            isComplete = (nameInput !== '' || contactInput !== '');
+            isComplete = (nameInput !== '' || kanaInput !== '' || contactInput !== '');
         }
-    } else if (currentSlideIndex === 13) { 
+
+    } else if (currentSlideIndex === 15) { 
+        // Q15. 送迎
         const transport = document.getElementById('input-transport').value;
         isComplete = transport !== '';
         if (transport === '自力通勤') {
             isComplete = document.getElementById('input-transport-means').value !== '';
         }
-    } else if (currentSlideIndex === 14) { 
-        // Q14. 便宜の供与のチェック 
+    
+    } else if (currentSlideIndex === 16) { 
+        // Q16. 便宜の供与のチェック 
         isComplete = document.getElementById('input-supply-wifi').value !== '未選択' && 
                      document.getElementById('input-supply-bike').value !== '未選択' &&
                      document.getElementById('input-supply-tools').value !== '未選択';
-    } else if (currentSlideIndex === 17) { 
-        // Q17. 備考のチェック (修正: 常に完了と見なす)
+
+    } else if (currentSlideIndex === 19) { 
+        // Q19. 備考のチェック (常に完了と見なす)
         isComplete = true; 
+
     } else if (currentSlideIndex > 0 && currentSlideIndex < slides.length - 1) {
         // その他のスライド: テキスト/数値/日付/セレクト/テキストエリアのいずれかが入力されていればOK
         const inputElement = currentSlide.querySelector('input[type="text"], input[type="number"], input[type="date"], textarea, select');
@@ -577,20 +790,35 @@ function selectChoice(inputId, value) {
     checkInput(inputElement); 
 }
 
-function toggleExtraTimeInputs(inputId, value, show) {
+// Q2 就業場所
+function toggleLocationNote(inputId, value, show) {
     selectChoice(inputId, value);
-    const fields = document.getElementById('extra-time-fields');
+    const fields = document.getElementById('work-location-fields');
     if (show) {
         fields.style.display = 'block';
     } else {
         fields.style.display = 'none';
-        document.getElementById('input-overtime-day').value = '';
-        document.getElementById('input-overtime-week').value = '';
-        document.getElementById('input-overtime-month-hours').value = '';
+        document.getElementById('input-work-location-note').value = '';
     }
     checkInput(document.getElementById(inputId));
 }
 
+// Q7, Q8 労働の有無（共通）
+function toggleExtraTimeInputs(inputId, value, show, fieldsId) {
+    selectChoice(inputId, value);
+    const fields = document.getElementById(fieldsId);
+    if (show) {
+        fields.style.display = 'block';
+    } else {
+        fields.style.display = 'none';
+        // 入力値をリセット (必須チェックのため)
+        const inputs = fields.querySelectorAll('input[type="number"], select');
+        inputs.forEach(input => input.value = ''); 
+    }
+    checkInput(document.getElementById(inputId));
+}
+
+// Q12 苦情処理者
 function toggleComplaintInputs(inputId, value, show) {
     selectChoice(inputId, value);
     const fields = document.getElementById('complaint-fields');
@@ -598,12 +826,15 @@ function toggleComplaintInputs(inputId, value, show) {
         fields.style.display = 'block';
     } else {
         fields.style.display = 'none';
+        // 入力値をリセット
         document.getElementById('input-complaint-name').value = '';
+        document.getElementById('input-complaint-kana').value = ''; 
         document.getElementById('input-complaint-contact').value = '';
     }
     checkInput(document.getElementById(inputId));
 }
 
+// Q15 送迎
 function selectChoiceAndShowNote(inputId, value) {
     selectChoice(inputId, value);
     const fields = document.getElementById('transport-self-fields');
@@ -624,16 +855,29 @@ function generateResult() {
     const outputDiv = document.getElementById('result-output');
     
     // Slackコピー用のテキストを生成
-    let resultText = "【スグクル商談シート v3.2 登録情報】\n";
+    let resultText = "【スグクル商談シート v3.3 登録情報】\n";
     resultText += "--------------------------------------\n";
+
+    resultText += `派遣先事業所名: ${formData['派遣先事業所名']}\n`;
+    resultText += `事業所名(カナ): ${formData['事業所名_カナ']}\n`;
+    resultText += `所在地: ${formData['所在地']}\n`;
+    resultText += `電話番号: ${formData['電話番号']}\n`;
+
+    let workLocationDisplay = formData['派遣就業場所'];
+    if (workLocationDisplay === 'その他') {
+        workLocationDisplay += `: ${formData['派遣就業場所_備考']}`;
+    }
+    resultText += `派遣就業場所: ${workLocationDisplay}\n`;
 
     resultText += `契約種別: ${formData['契約の種別']}\n`;
     resultText += `業務内容: ${formData['業務内容'].replace(/\n/g, ' ')}\n`;
-    resultText += `就業場所: ${formData['就業場所'].replace(/\n/g, ' ')}\n`;
     resultText += `期間: ${formData['開始日']} 〜 ${formData['終了予定日']}\n`;
     
-    // 勤務時間・休日
-    resultText += `勤務時間・休日: ${formData['勤務時間・休日']}\n`;
+    // 勤務時間・休日 (修正版の表示)
+    resultText += `勤務時間: ${formData['勤務時間']}\n`;
+    resultText += `休憩時間: ${formData['休憩時間']}\n`;
+    resultText += `休日(曜日): ${formData['休日_曜日']}\n`;
+    resultText += `勤務時間備考: ${formData['勤務時間_備考']}\n`;
     
     // 時間外労働の表示
     let overtimeText = formData['時間外労働の有無'];
@@ -650,16 +894,26 @@ function generateResult() {
         overtimeText += details.length > 0 ? ` (${details.join(', ')})` : '';
     }
     resultText += `時間外労働: ${overtimeText}\n`;
-    
+
+    // 休日労働の表示 (新規追加)
+    let holidayWorkText = formData['休日労働の有無'];
+    if (holidayWorkText === '有') {
+        holidayWorkText += ` (頻度:月${formData['休日労働_頻度_月']}日, 時間:${formData['休日労働_開始時刻']}〜${formData['休日労働_終了時刻']})`;
+    }
+    resultText += `休日労働: ${holidayWorkText}\n`;
+
     resultText += `必要人数: ${formData['必要人数']}名\n`;
     resultText += `単価(無): ¥${formData['単価_免許なし']}\n`;
     if (formData['単価_免許あり']) {
         resultText += `単価(有): ¥${formData['単価_免許あり']}\n`;
     }
 
-    resultText += `指揮命令者: ${formData['指揮命令者']}\n`;
+    // 指揮命令者 (フリガナ追加)
+    resultText += `指揮命令者: ${formData['指揮命令者_氏名']} (${formData['指揮命令者_カナ']})\n`;
+    
+    // 苦情処理者 (フリガナ追加)
     if (formData['苦情処理_役割'] === 'その他') {
-        resultText += `苦情処理者(先): ${formData['苦情処理_氏名']} (${formData['苦情処理_連絡先']})\n`;
+        resultText += `苦情処理者(先): ${formData['苦情処理_氏名']} (${formData['苦情処理_カナ']}) 連絡先:${formData['苦情処理_連絡先']}\n`;
     } else {
         resultText += `苦情処理者(先): 指揮命令者と同じ\n`;
     }
@@ -672,7 +926,7 @@ function generateResult() {
     }
     resultText += `送迎・通勤: ${transportDisplay}\n`;
 
-    // 便宜の供与 (最終修正版の表示)
+    // 便宜の供与
     resultText += `便宜供与(Wi-Fi): ${formData['供与_Wi-Fi']}\n`;
     resultText += `便宜供与(自転車): ${formData['供与_自転車']}\n`;
     resultText += `便宜供与(道具): ${formData['供与_道具']}\n`;
@@ -686,7 +940,7 @@ function generateResult() {
     outputDiv.textContent = resultText;
 }
 
-// --- Slackコピー機能 (修正: コピー後、Slackアプリに遷移) ---
+// --- Slackコピー機能 (コピー後、Slackアプリに遷移) ---
 function copyText() {
     const textToCopy = document.getElementById('result-output').textContent;
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -699,15 +953,14 @@ function copyText() {
 
     }).catch(err => {
         console.error('コピーに失敗しました', err);
-        alert('コピーに失敗しました。コンソールを確認してください。');
+        alert('コピーに失敗しました。ブラウザの設定をご確認ください。');
     });
 }
 
 // --- Google Sheet 送信機能 ---
 function sendToSheet() {
-    if (SCRIPT_URL === "ここにウェブアプリのURLを貼り付けてください") {
-        alert("エラー: SCRIPT_URLが設定されていません。HTMLの先頭にあるコメントを確認してください。");
-        return;
+    if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzkrHLrLPO1kQ5iQzCxvMwEp6fvjKPPvRXnNWYSEO6gFOm0_bRy5grtIghwR9xqoyxj/exec") {
+        alert("重要: Google App Script (GAS) のURLが設定されているか確認してください。");
     }
 
     saveCurrentFormData(); 
@@ -742,7 +995,7 @@ function sendToSheet() {
             btn.classList.remove('bg-green-600');
             btn.classList.add('bg-red-600');
             spinner.style.display = 'none';
-            alert("データの送信中にエラーが発生しました。コンソールを確認してください。");
+            alert("データの送信中にエラーが発生しました。インターネット接続を確認してください。");
         });
 }
 
